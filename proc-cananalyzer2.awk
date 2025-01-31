@@ -12,6 +12,15 @@ BEGIN {
   timestamp_master_boot = 0
   # max timestamp
   timestamp_max = 0
+
+  # calculate guardtimes
+  remote_frame = "\"Remote Frame (DLC=1)\""
+  node_guard_id_rioec = 0x707
+  prev_ts_node_guard_rioec = 0
+  guardtime_rioec = "N/A"
+  node_guard_id_v200 = 0x701
+  prev_ts_node_guard_v200 = 0
+  guardtime_v200 = "N/A"
 }
 
 # the title row
@@ -21,7 +30,8 @@ NR==1 {
         "Timestamp [us]" "\t\t" \
         substr($2,2,length($2)-2) "\t\t\t\t\t" \
         substr($4,2,length($4)-2) "\t\t\t\t\t" \
-        substr($6,2,length($6)-2) 
+        "Guardtime RIOEC [us]" "\t\t\t" \
+        substr($6,2,length($6)-2) "\t\t\t"
 }
 
 # the data rows
@@ -40,13 +50,34 @@ NR>1  {
     timestamp = timestamp - timestamp_zero
     timestamp_max = timestamp
   }
+
+  # calc the guardtime
+  if (strtonum($4) == node_guard_id_rioec && $6 == remote_frame) {
+    if (prev_ts_node_guard_rioec > 0)
+      guardtime_rioec = timestamp - prev_ts_node_guard_rioec
+    prev_ts_node_guard_rioec = timestamp
+  }
+  else {
+    guardtime_rioec = "N/A"
+  }
+  if (strtonum($4) == node_guard_id_v200 && $6 == remote_frame) {
+    if (prev_ts_node_guard_v200 > 0)
+      guardtime_v200 = timestamp - prev_ts_node_guard_v200
+    prev_ts_node_guard_v200 = timestamp
+  }
+  else {
+    guardtime_v200 = "N/A"
+  }
+
   # add timestamp in column 2
   # strip leading an trailing quote for all columns
   print substr($1,2,length($1)-2) "\t\t" \
         timestamp "\t\t\t" \
         substr($2,2,length($2)-2) "\t\t\t" \
         $4 "\t\t\t\t\t\t" \
-        substr($6,2,length($6)-2)
+        guardtime_rioec "\t\t\t" \
+        guardtime_v200 "\t\t\t" \
+        substr($6,2,length($6)-2) "\t\t\t"
 }
 
 END {
