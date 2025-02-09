@@ -25,6 +25,7 @@ prefix_fn="${ca2_csv/\.csv/}"
 # prepare the header and the summary for the plot
 header="File $ca2_csv"
 summary="summary"
+# expect to get the master boot timestamp from the last row
 timestamp_master_boot=$(tail -1 $ca2_dat)
 
 # plot can messages to svg file
