@@ -18,27 +18,30 @@ fi
 ca2_dat="${ca2_csv/csv/dat}"
 # transform csv input into dat for plotting
 ./proc-cananalyzer2.awk "$ca2_csv" > "$ca2_dat"
+echo "File $ca2_dat created"
 
 # use the file name w/o extension as prefix
 prefix_fn="${ca2_csv/\.csv/}"
+# name messages graph file
+ca2_msg_svg="${prefix_fn}-messages.svg"
 
-# prepare the header and the summary for the plot
-header="File $ca2_csv"
-summary="summary"
-timestamp_master_boot=$(tail -1 $ca2_dat)
+# prepare the graph title
+graph_title="Source file $ca2_csv"
 
 # plot can messages to svg file
 gnuplot -e "in_file='$ca2_dat'" \
-        -e "out_file='${prefix_fn}-messages.svg'" \
-        -e "header='$header'" \
-        -e "summary='$summary'" \
-        -e "timestamp_master_boot='$timestamp_master_boot'" \
+        -e "out_file='$ca2_msg_svg'" \
+        -e "graph_title='$graph_title'" \
         -p can_messages.plt
+echo ""
+echo "File $ca2_msg_svg created"
 
+# name svg output graph file
+ca2_gt_svg="${prefix_fn}-guardtimes.svg"
 # plot guardtimes to svg file
 gnuplot -e "in_file='$ca2_dat'" \
-        -e "out_file='${prefix_fn}-guardtimes.svg'" \
-        -e "header='$header'" \
-        -e "summary='$summary'" \
-        -e "timestamp_master_boot='$timestamp_master_boot'" \
+        -e "out_file='$ca2_gt_svg'" \
+        -e "graph_title='$graph_title'" \
         -p can_guardtimes.plt
+echo ""
+echo "File $ca2_gt_svg created"

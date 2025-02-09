@@ -5,31 +5,32 @@
 # required input params
 # `in_file` the input filename
 # `out_file` the svg output filename
-# `header` the graph title
-# `summary` the graph summary
-# `timestamp_master_boot` the timestamp of master boot
+# `graph_title` the graph title
 
 set datafile missing NaN
 
-# collect statistics using column 2, see `help stats` in gnuplot prompt
-stats in_file u 2:5
-timestamp_max = STATS_max_x
-guardtime_max = STATS_max_y
 
-# thanks to http://stackoverflow.com/questions/22476777/how-to-set-title-below-a-graph-in-gnuplot
-set title header offset 0,3
-set label summary at -10,3.5e+006
+# get data from input file executing system command
+# extract data from trailing lines
+#guardtime_rioec_min = system(sprintf("tail -5 %s | head -1 | awk '{print $2}'", in_file))
+#guardtime_rioec_max = system(sprintf("tail -5 %s | head -1 | awk '{print $3}'", in_file))
+#guardtime_v200_min = system(sprintf("tail -4 %s | head -1 | awk '{print $2}'", in_file))
+#guardtime_v200_max = system(sprintf("tail -4 %s | head -1 | awk '{print $3}'", in_file))
+#sync_time_min = system(sprintf("tail -3 %s | head -1 | awk '{print $2}'", in_file))
+#sync_time_max = system(sprintf("tail -3 %s | head -1 | awk '{print $3}'", in_file))
+#timestamp_master_boot = system(sprintf("tail -1 %s | awk '{print $4}'", in_file))
+#show variables all
+
+set title graph_title
 set xlabel "Time [us]"
 set ylabel "Guardtime [us]"
-# fit the view to important data
-set xrange [timestamp_master_boot-1000000:timestamp_max+1000000]
-set yrange [0:guardtime_max+200000]
 
 # set SVG output
 set terminal svg font "Arial, 12" linewidth 1
 # create the output file
 set output sprintf("|cat >./%s", out_file)
 
-plot in_file using 2:5 title "RIOEC guardtime" with dots,\
-     in_file using 2:6 title "V200 guardtime" with dots
+plot in_file every :::::0 using 2:5 title "RIOEC guardtime" with dots,\
+     in_file every :::::0 using 2:6 title "V200 guardtime" with dots, \
+     in_file every :::::0 using 2:7 title "sync time" with dots
 
